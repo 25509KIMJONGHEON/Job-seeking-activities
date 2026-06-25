@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version> <!-- 최신 안정 버전의 Spring Boot -->
+        <relativePath/> <!-- repository에서 부모 pom을 찾음 -->
+    </parent>
+    <groupId>com.example</groupId>
+    <artifactId>dashboard</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>dashboard</name>
+    <description>Job Seeking Dashboard</description>
+    <properties>
+        <java.version>17</java.version> <!-- Java 17 버전 사용 -->
+    </properties>
+    <dependencies>
+        <!-- 웹 애플리케이션을 만들기 위한 필수 라이브러리 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 웹 스크레이핑(크롤링)을 위한 Jsoup 라이브러리 -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -2,6 +2,9 @@ package com.example.dashboard.job;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -9,13 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-// 아래 4개의 import 구문이 필요합니다.
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.http.ResponseEntity;
-
 @RestController
 public class JobScrapingController {
+
 
     // 스크레이핑 결과를 담을 데이터 클래스 (DTO)
     public static class JobPosting {

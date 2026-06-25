@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就職活動ダッシュボード</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="logo">
+                <a href="#">就活ダッシュボード</a>
+            </div>
+            <nav>
+                <a href="#" class="btn btn-secondary">会員登録</a>
+                <a href="#" class="btn btn-primary">ログイン</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- メイン検索セクション -->
+        <section class="search-hero">
+            <h1>気になる企業や求人を探そう</h1>
+            <div class="search-box">
+                <input type="text" placeholder="企業名、職種、キーワードなどを入力">
+                <button class="btn btn-primary">検索</button>
+            </div>
+        </section>
+
+        <!-- コンテンツエリア -->
+        <div class="main-content-wrapper">
+            <div class="content-grid">
+                <!-- 新着求人情報セクション -->
+                <section class="card-container">
+                    <h2>📌 新着求人情報</h2>
+                    <div class="card" id="job-board">
+                        <p>求人情報を読み込んでいます...</p>
+                    </div>
+                </section>
+
+                <!-- 企業ニュースセクション -->
+                <section class="card-container">
+                    <h2>📰 志望企業の最新ニュース</h2>
+                    <div class="card" id="news-board">
+                        <p>ニュースを読み込んでいます...</p>
+                    </div>
+                </section>
+
+                <!-- 今日の予定セクション (오늘의 일정) -->
+                <section class="card-container">
+                    <h2>📅 今日の予定 (Googleカレンダー連携)</h2>
+                    <div class="card" id="calendar-board">
+                        <p>Googleアカウントと連携して予定を表示します。</p>
+                    </div>
+                </section>
+
+                <!-- Myタスクリストセクション -->
+                <section class="card-container">
+                    <h2>✅ Myタスクリスト</h2>
+                    <div class="card" id="task-board">
+                        <p>タスクを追加して管理しましょう。</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>書籍検索システム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>📚 書籍検索システム</h1>
+    
+    <div class="search-box">
+        <input type="text" id="keyword" placeholder="著者名やタイトルを入力...">
+        <button onclick="searchBooks()">検索</button>
+    </div>
+
+    <div id="results" class="results-container"></div>
+
+    <script>
+        // Enter 키를 눌러도 검색이 되도록 설정
+        document.getElementById('keyword').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchBooks();
+            }
+        });
+
+        async function searchBooks() {
+            const keyword = document.getElementById('keyword').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>検索中...</p>'; // 로딩 표시
+
+            if (!keyword) {
+                resultsDiv.innerHTML = '<p>キーワードを入力してください。</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${keyword}&maxResults=12&country=JP`);
+                const data = await response.json();
+                resultsDiv.innerHTML = ''; // 이전 결과 지우기
+
+                if (data.items?.length > 0) {
+                    data.items.forEach(item => {
+                        const info = item.volumeInfo;
+                        const title = info.title;
+                        const author = info.authors ? info.authors.join(', ') : '著者不明';
+                        const thumbnail = info.imageLinks?.thumbnail || '';
+                        
+                        const card = document.createElement('div');
+                        card.className = 'book-card';
+
+                        if (thumbnail) {
+                            const img = document.createElement('img');
+                            img.src = thumbnail;
+                            img.alt = title;
+                            card.appendChild(img);
+                        }
+                        
+                        card.innerHTML += `
+                            <h3>${title}</h3>
+                            <p>著者: ${author}</p>`;
+                        resultsDiv.appendChild(card);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>結果が見つかりませんでした。</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                resultsDiv.innerHTML = '<p>情報の取得中にエラーが発生しました。</p>';
+            }
+        }
+    </script>
+</body>
+</html>

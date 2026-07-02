@@ -5,7 +5,7 @@ function App() {
   const [formData, setFormData] = useState({ applicantName: '', entrySheet: '' });
 
   // 마이나비 스타일의 풍부한 더미 데이터 (프론트엔드 단독 출력용)
-  const jobs = [
+  const jobs = [ // 모든 텍스트를 일본어로 수정
     {
       id: 1,
       company: 'ESPEC Corp (エスペック)',

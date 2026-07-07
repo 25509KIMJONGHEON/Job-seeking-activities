@@ -108,8 +108,9 @@
             <h1>📚 書籍検索システム</h1>
             <p class="subtitle">お探しの本を見つけて、新しい知識の世界へ旅立ちましょう。</p>
             <div class="search-box">
-                <input type="text" id="keyword" placeholder="著者名やタイトルを入力...">
+                <input type="text" id="keyword" placeholder="著者名やタイトルを入力..." autocomplete="off">
                 <button onclick="searchBooks()">検索</button>
+                <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
         </div>
     </header>
@@ -161,6 +162,47 @@
             if (document.body.classList.contains('dark-mode')) theme = 'dark';
             localStorage.setItem('theme', theme);
         }
+        
+        // 자동완성 로직
+        const keywordInput = document.getElementById('keyword');
+        const autocompleteList = document.getElementById('autocomplete-list');
+        let debounceTimeout;
+
+        keywordInput.addEventListener('input', function() {
+            clearTimeout(debounceTimeout);
+            const query = this.value;
+
+            if (query.length < 2) {
+                autocompleteList.innerHTML = '';
+                return;
+            }
+
+            debounceTimeout = setTimeout(async () => {
+                const response = await fetch(`/search?q=${query}&page=1`);
+                const data = await response.json();
+                autocompleteList.innerHTML = '';
+                if (data.items) {
+                    data.items.slice(0, 5).forEach(item => { // 최대 5개 제안
+                        const title = item.volumeInfo.title;
+                        const div = document.createElement('div');
+                        div.innerHTML = title;
+                        div.addEventListener('click', function() {
+                            keywordInput.value = this.innerText;
+                            autocompleteList.innerHTML = '';
+                            searchBooks();
+                        });
+                        autocompleteList.appendChild(div);
+                    });
+                }
+            }, 300); // 300ms 디바운스
+        });
+
+        // 외부 클릭 시 자동완성 목록 닫기
+        document.addEventListener('click', function (e) {
+            if (e.target !== keywordInput) {
+                autocompleteList.innerHTML = '';
+            }
+        });
 
         // Enter 키를 눌러도 검색이 되도록 설정
         document.getElementById('keyword').addEventListener('keypress', function(event) {

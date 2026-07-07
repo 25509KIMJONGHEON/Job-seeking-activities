@@ -115,6 +115,11 @@
         </div>
     </header>
 
+    <div class="view-switcher">
+        <button id="grid-view-btn" class="active">▦ グリッド</button>
+        <button id="list-view-btn">☰ リスト</button>
+    </div>
+
     <main id="results" class="results-container"></main>
     <div id="pagination" class="pagination-container"></div>
 
@@ -204,6 +209,25 @@
             }
         });
 
+        // 레이아웃 전환 로직
+        const gridViewBtn = document.getElementById('grid-view-btn');
+        const listViewBtn = document.getElementById('list-view-btn');
+        const resultsContainer = document.getElementById('results');
+
+        resultsContainer.classList.add('grid-view'); // 기본값 설정
+
+        gridViewBtn.addEventListener('click', () => {
+            resultsContainer.classList.replace('list-view', 'grid-view');
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+
+        listViewBtn.addEventListener('click', () => {
+            resultsContainer.classList.replace('grid-view', 'list-view');
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+        });
+
         // Enter 키를 눌러도 검색이 되도록 설정
         document.getElementById('keyword').addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -244,6 +268,7 @@
                         const info = item.volumeInfo;
                         const title = info.title;
                         const author = info.authors ? info.authors.join(', ') : '著者不明';
+                        const description = info.description || '';
                         const thumbnail = info.imageLinks?.thumbnail || '';
                         
                         const card = document.createElement('div');
@@ -257,9 +282,14 @@
                             card.appendChild(img);
                         }
                         
+                        const shortDescription = description.substring(0, 100) + (description.length > 100 ? '...' : '');
+
                         card.innerHTML += `
-                            <h3>${title}</h3>
-                            <p>著者: ${author}</p>`;
+                            <div class="card-content">
+                                <h3>${title}</h3>
+                                <p>著者: ${author}</p>
+                                <p class="description">${shortDescription}</p>
+                            </div>`;
                         resultsDiv.appendChild(card);
                     });
                 } else {

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>書籍検索システム</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
         /* Modal Styles */
         .modal {
@@ -72,7 +74,7 @@
             flex: 1;
         }
 
-        #modal-book-details h2 { margin-top: 0; color: #2c3e50; }
+        #modal-book-details h2 { margin-top: 0; color: var(--card-title-color); }
         #modal-book-details p { line-height: 1.6; }
 
         /* Animations */
@@ -85,6 +87,25 @@
             from { transform: translateY(-30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        .skeleton-card { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: var(--card-shadow); }
+        .skeleton-card .skeleton { background: #e0e0e0; border-radius: 4px; }
+        .skeleton-card .skeleton.image { width: 100%; height: 250px; margin-bottom: 10px; }
+        .skeleton-card .skeleton.title { height: 20px; width: 80%; margin-bottom: 10px; }
+        .skeleton-card .skeleton.text { height: 15px; width: 60%; }
+
+        .like-btn {
+            position: absolute; top: 10px; right: 10px; background: none; border: none;
+            font-size: 24px; cursor: pointer; color: #ccc;
+        }
+        .like-btn.liked { color: #e74c3c; }
+        .book-card { position: relative; }
+
+        .remove-btn {
+            position: absolute; top: 10px; left: 10px; background: none; border: none;
+            font-size: 20px; cursor: pointer; color: #95a5a6;
+        }
+        .remove-btn:hover { color: #34495e; }
 
         .pagination-container {
             margin-top: 30px;
@@ -104,24 +125,43 @@
             </label>
             <span>🌙</span>
         </div>
+        <div id="user-profile" class="user-profile">
+            <!-- 로그인 버튼 또는 사용자 정보가 여기에 표시됩니다 -->
+        </div>
         <div class="hero-content">
             <h1>📚 書籍検索システム</h1>
             <p class="subtitle">お探しの本を見つけて、新しい知識の世界へ旅立ちましょう。</p>
             <div class="search-box">
-                <input type="text" id="keyword" placeholder="著者名やタイトルを入力..." autocomplete="off">
+                <input type="text" id="keyword" placeholder="著者名やタイトルを入力...">
                 <button onclick="searchBooks()">検索</button>
-                <div id="autocomplete-list" class="autocomplete-items"></div>
             </div>
         </div>
     </header>
 
-    <div class="view-switcher">
-        <button id="grid-view-btn" class="active">▦ グリッド</button>
-        <button id="list-view-btn">☰ リスト</button>
+    <div class="controls-container">
+        <div class="sort-options">
+            <button data-sort="relevance" class="sort-btn active">関連度順</button>
+            <button data-sort="newest" class="sort-btn">新着順</button>
+        </div>
+        <div class="view-switcher">
+            <button id="grid-view-btn" class="active">▦ グリッド</button>
+            <button id="list-view-btn">☰ リスト</button>
+        </div>
+    </div>
+
+    <!-- My List Modal -->
+    <div id="my-list-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button my-list-close">&times;</span>
+            <h2>マイリスト</h2>
+            <div id="my-list-content" class="results-container"></div>
+        </div>
     </div>
 
     <main id="results" class="results-container"></main>
     <div id="pagination" class="pagination-container"></div>
+
+    <button id="scrollTopBtn" title="トップへ戻る">▲</button>
 
     <!-- The Modal -->
     <div id="book-modal" class="modal">
@@ -131,10 +171,17 @@
         </div>
     </div>
 
+    <footer class="site-footer">
+        <p>&copy; 2026 書籍検索システム. All Rights Reserved.</p>
+        <p>このサイトは学校の課題として作成されました。</p>
+    </footer>
+
     <script>
         // 현재 페이지와 검색어 상태를 관리하는 변수
         let currentPage = 1;
         let currentKeyword = '';
+        let currentSortOrder = 'relevance';
+        let userFavorites = [];
         let totalItems = 0;
 
         // 모달 관련 요소 가져오기
@@ -152,6 +199,17 @@
             }
         }
 
+        // 마이리스트 모달 관련
+        const myListModal = document.getElementById('my-list-modal');
+        const myListCloseBtn = document.querySelector('.my-list-close');
+        myListCloseBtn.onclick = () => myListModal.classList.remove('show');
+        window.addEventListener('click', (event) => {
+            if (event.target == myListModal) {
+                myListModal.classList.remove('show');
+            }
+        });
+
+
         // 테마 전환 로직
         const themeToggle = document.getElementById('checkbox');
         const currentTheme = localStorage.getItem('theme');
@@ -166,47 +224,106 @@
             let theme = 'light';
             if (document.body.classList.contains('dark-mode')) theme = 'dark';
             localStorage.setItem('theme', theme);
-        }
-        
-        // 자동완성 로직
-        const keywordInput = document.getElementById('keyword');
-        const autocompleteList = document.getElementById('autocomplete-list');
-        let debounceTimeout;
-
-        keywordInput.addEventListener('input', function() {
-            clearTimeout(debounceTimeout);
-            const query = this.value;
-
-            if (query.length < 2) {
-                autocompleteList.innerHTML = '';
-                return;
-            }
-
-            debounceTimeout = setTimeout(async () => {
-                const response = await fetch(`/search?q=${query}&page=1`);
-                const data = await response.json();
-                autocompleteList.innerHTML = '';
-                if (data.items) {
-                    data.items.slice(0, 5).forEach(item => { // 최대 5개 제안
-                        const title = item.volumeInfo.title;
-                        const div = document.createElement('div');
-                        div.innerHTML = title;
-                        div.addEventListener('click', function() {
-                            keywordInput.value = this.innerText;
-                            autocompleteList.innerHTML = '';
-                            searchBooks();
-                        });
-                        autocompleteList.appendChild(div);
-                    });
-                }
-            }, 300); // 300ms 디바운스
         });
 
-        // 외부 클릭 시 자동완성 목록 닫기
-        document.addEventListener('click', function (e) {
-            if (e.target !== keywordInput) {
-                autocompleteList.innerHTML = '';
+        // Google 로그인 초기화 및 사용자 상태 확인
+        window.onload = async function () {
+            // 서버에서 클라이언트 ID를 가져옵니다.
+            const configRes = await fetch('/api/config');
+            const config = await configRes.json();
+
+            google.accounts.id.initialize({
+                client_id: config.clientId,
+                callback: handleCredentialResponse
+            });
+            checkLoginStatus();
+        };
+
+        function renderLoginButton() {
+            const userProfileDiv = document.getElementById('user-profile');
+            userProfileDiv.innerHTML = ''; // 기존 내용 지우기
+            google.accounts.id.renderButton(
+                userProfileDiv,
+                { theme: "outline", size: "large", text: "signin_with", shape: "rectangular" }
+            );
+        }
+
+        async function handleCredentialResponse(response) {
+            const res = await fetch('/auth/google/callback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: response.credential })
+            });
+            if (res.ok) {
+                const user = await res.json();
+                renderUserProfile(user);
+                fetchUserFavorites(); // 로그인 성공 시 즐겨찾기 목록 가져오기
+            } else {
+                console.error("Login Failed");
             }
+        }
+
+        async function checkLoginStatus() {
+            const res = await fetch('/api/me');
+            if (res.ok) {
+                const user = await res.json();
+                renderUserProfile(user);
+                fetchUserFavorites(); // 페이지 로드 시 로그인 상태면 즐겨찾기 가져오기
+            } else {
+                renderLoginButton();
+            }
+        }
+
+        async function fetchUserFavorites() {
+            const res = await fetch('/api/mylist');
+            if (res.ok) {
+                userFavorites = await res.json();
+            } else {
+                userFavorites = [];
+            }
+        }
+
+        function renderUserProfile(user) {
+            const userProfileDiv = document.getElementById('user-profile');
+            userProfileDiv.innerHTML = `
+                <img src="${user.picture}" alt="Profile picture" class="profile-pic">
+                <span class="profile-name">${user.name}</span>
+                <button id="my-list-btn" class="my-list-button">マイリスト</button>
+                <a href="/api/logout" class="logout-btn">ログアウト</a>
+            `;
+            // 마이리스트 버튼 이벤트 리스너 추가
+            document.getElementById('my-list-btn').addEventListener('click', showMyList);
+        }
+
+        // Scroll to Top 버튼 로직
+        const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+        window.onscroll = function() {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                scrollTopBtn.style.display = "block";
+            } else {
+                scrollTopBtn.style.display = "none";
+            }
+        };
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 정렬 버튼 로직
+        document.querySelectorAll('.sort-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.sort-btn.active').classList.remove('active');
+                button.classList.add('active');
+                currentSortOrder = button.dataset.sort;
+                currentPage = 1; // 정렬 기준 변경 시 1페이지로 리셋
+                if (currentKeyword) {
+                    fetchAndDisplayBooks();
+                }
+            });
         });
 
         // 레이아웃 전환 로직
@@ -248,7 +365,17 @@
 
         async function fetchAndDisplayBooks() {
             const resultsDiv = document.querySelector('#results');
-            resultsDiv.innerHTML = '<p>検索中...</p>'; // 로딩 표시
+            // 스켈레톤 UI 표시
+            resultsDiv.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'skeleton-card';
+                skeletonCard.innerHTML = `
+                    <div class="skeleton image"></div>
+                    <div class="skeleton title"></div>
+                    <div class="skeleton text"></div>`;
+                resultsDiv.appendChild(skeletonCard);
+            }
             document.getElementById('pagination').innerHTML = ''; // 페이지네이션 초기화
 
             if (!currentKeyword) {
@@ -258,7 +385,7 @@
 
             try {
                 // 서버의 /search 엔드포인트로 요청을 보냅니다.
-                const response = await fetch(`/search?q=${currentKeyword}&page=${currentPage}`);
+                const response = await fetch(`/search?q=${currentKeyword}&page=${currentPage}&orderBy=${currentSortOrder}`);
                 const data = await response.json();
                 resultsDiv.innerHTML = ''; // 이전 결과 지우기
 
@@ -268,28 +395,43 @@
                         const info = item.volumeInfo;
                         const title = info.title;
                         const author = info.authors ? info.authors.join(', ') : '著者不明';
+                        const bookId = item.id;
                         const description = info.description || '';
                         const thumbnail = info.imageLinks?.thumbnail || '';
                         
                         const card = document.createElement('div');
                         card.className = 'book-card';
                         card.onclick = () => showBookDetails(item); // 카드 클릭 시 상세 정보 표시
-
-                        if (thumbnail) {
-                            const img = document.createElement('img');
-                            img.src = thumbnail;
-                            img.alt = title;
-                            card.appendChild(img);
-                        }
-                        
                         const shortDescription = description.substring(0, 100) + (description.length > 100 ? '...' : '');
+                        
+                        // XSS 방지를 위해 textContent를 사용하여 안전하게 텍스트를 삽입합니다.
+                        const imgElement = thumbnail ? `<img src="${thumbnail}" alt="">` : '';
+                        const titleElement = document.createElement('h3');
+                        titleElement.textContent = title;
+                        const authorElement = document.createElement('p');
+                        authorElement.textContent = `著者: ${author}`;
+                        const descriptionElement = document.createElement('p');
+                        descriptionElement.className = 'description';
+                        descriptionElement.textContent = shortDescription;
+                        
+                        card.innerHTML = `
+                            ${imgElement}
+                            <button class="like-btn">&#x2764;</button>
+                            <div class="card-content"></div>`;
+                        
+                        const cardContent = card.querySelector('.card-content');
+                        cardContent.append(titleElement, authorElement, descriptionElement);
+                        
+                        // HTML이 생성된 후, 버튼 요소를 찾아 이벤트를 연결합니다.
+                        const likeBtn = card.querySelector('.like-btn');
+                        if (userFavorites.includes(bookId)) {
+                            likeBtn.classList.add('liked');
+                        }
+                        likeBtn.onclick = (e) => { 
+                            e.stopPropagation(); // 이벤트 버블링 방지
+                            toggleLike(bookId, likeBtn); 
+                        };
 
-                        card.innerHTML += `
-                            <div class="card-content">
-                                <h3>${title}</h3>
-                                <p>著者: ${author}</p>
-                                <p class="description">${shortDescription}</p>
-                            </div>`;
                         resultsDiv.appendChild(card);
                     });
                 } else {
@@ -305,6 +447,103 @@
             }
         }
 
+        async function toggleLike(bookId, btn) {
+            if (!document.querySelector('.profile-name')) { // 로그인하지 않은 경우
+                alert('「いいね」機能を利用するにはログインが必要です。');
+                return;
+            }
+
+            const isLiked = btn.classList.toggle('liked');
+            if (isLiked) {
+                // 좋아요 추가
+                userFavorites.push(bookId);
+                await fetch('/api/mylist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookId })
+                });
+            } else {
+                // 좋아요 삭제
+                userFavorites = userFavorites.filter(id => id !== bookId);
+                await fetch(`/api/mylist/${bookId}`, { method: 'DELETE' });
+            }
+        }
+
+        async function showMyList() {
+            const contentDiv = document.getElementById('my-list-content');
+            contentDiv.innerHTML = '<p>読み込み中...</p>';
+            myListModal.classList.add('show');
+
+            if (userFavorites.length === 0) {
+                contentDiv.innerHTML = '<p>「いいね」した本がありません。</p>';
+                return;
+            }
+
+            // 각 책 ID에 대해 상세 정보 요청
+            const bookPromises = userFavorites.map(bookId => fetch(`/api/book/${bookId}`).then(res => res.json()));
+            
+            const favoriteBooks = await Promise.all(bookPromises);
+            
+            contentDiv.innerHTML = '';
+            favoriteBooks.forEach(item => {
+                const info = item.volumeInfo;
+                const title = info.title;
+                const author = info.authors ? info.authors.join(', ') : '著者不明';
+                const thumbnail = info.imageLinks?.thumbnail || '';
+
+                const card = document.createElement('div');
+                card.className = 'book-card';
+
+                // XSS 방지를 위해 textContent 사용
+                const titleElement = document.createElement('h3');
+                titleElement.textContent = title;
+                const authorElement = document.createElement('p');
+                authorElement.textContent = `著者: ${author}`;
+
+                card.innerHTML = `
+                    <button class="remove-btn" title="リストから削除">🗑️</button>
+                    <img src="${thumbnail}" alt="">
+                    <div class="card-content"></div>
+                `;
+                const cardContent = card.querySelector('.card-content');
+                cardContent.append(titleElement, authorElement);
+
+                // 마이리스트 카드 클릭 시 상세 모달 열기
+                card.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('remove-btn')) {
+                        myListModal.classList.remove('show');
+                        showBookDetails(item);
+                    }
+                });
+
+                // 삭제 버튼 이벤트 리스너
+                card.querySelector('.remove-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeFromMyList(item.id, card);
+                });
+
+                contentDiv.appendChild(card);
+            });
+        }
+
+        async function removeFromMyList(bookId, cardElement) {
+            // 1. 서버에 삭제 요청
+            await fetch(`/api/mylist/${bookId}`, { method: 'DELETE' });
+            // 2. 클라이언트 데이터 업데이트
+            userFavorites = userFavorites.filter(id => id !== bookId);
+            // 3. 마이리스트 뷰에서 카드 제거
+            cardElement.remove();
+            // 4. 메인 검색 결과에 있는 카드의 하트 상태 업데이트
+            const mainResultCardBtn = document.querySelector(`[data-book-id="${bookId}"] .like-btn`);
+            if (mainResultCardBtn) {
+                mainResultCardBtn.classList.remove('liked');
+            }
+            // 5. 마이리스트가 비었으면 메시지 표시
+            if (userFavorites.length === 0) {
+                document.getElementById('my-list-content').innerHTML = '<p>「いいね」した本がありません。</p>';
+            }
+        }
+
         function showBookDetails(bookItem) {
             const detailsDiv = document.getElementById('modal-book-details');
             const info = bookItem.volumeInfo;
@@ -316,15 +555,26 @@
             const description = info.description || '説明がありません。';
             const thumbnail = info.imageLinks?.thumbnail || '';
 
+            // XSS 방지를 위해 textContent 사용
             detailsDiv.innerHTML = `
-                <img src="${thumbnail}" alt="${title}">
-                <div class="text-content">
-                    <h2>${title}</h2>
-                    <p><strong>著者:</strong> ${author}</p>
-                    <p><strong>出版社:</strong> ${publisher} (${publishedDate})</p>
-                    <p>${description}</p>
-                </div>
+                <img src="${thumbnail}" alt="">
+                <div class="text-content"></div>
             `;
+
+            const textContentDiv = detailsDiv.querySelector('.text-content');
+            const titleElement = document.createElement('h2');
+            titleElement.textContent = title;
+            const authorElement = document.createElement('p');
+            authorElement.innerHTML = `<strong>著者:</strong> `;
+            authorElement.append(document.createTextNode(author));
+            const publisherElement = document.createElement('p');
+            publisherElement.innerHTML = `<strong>出版社:</strong> `;
+            publisherElement.append(document.createTextNode(`${publisher} (${publishedDate})`));
+            const descriptionElement = document.createElement('p');
+            descriptionElement.textContent = description;
+
+            textContentDiv.append(titleElement, authorElement, publisherElement, descriptionElement);
+
             modal.classList.add('show');
         }
 

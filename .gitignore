@@ -1,0 +1,8 @@
+# .env 파일은 민감한 정보를 담고 있으므로 Git 추적에서 제외합니다.
+.env
+
+# Node.js 프로젝트에서 생성되는 폴더
+node_modules
+
+# session-file-store가 생성하는 세션 파일
+sessions/

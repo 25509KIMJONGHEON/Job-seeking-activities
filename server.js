@@ -5,6 +5,7 @@ const { OAuth2Client } = require('google-auth-library');
 const session = require('express-session');
 const fs = require('fs').promises;
 const FileStore = require('session-file-store')(session);
+const sqlite3 = require('sqlite3').verbose();
 
 // .env 파일에서 API 키를 가져옵니다.
 const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
@@ -21,6 +22,15 @@ if (!googleClientId || !googleClientSecret) {
 if (!sessionSecret) {
     throw new Error("SESSION_SECRET이 .env 파일에 설정되지 않았습니다.");
 }
+
+// --- Database Setup (SQLite) ---
+const db = new sqlite3.Database('./database.db', (err) => {
+    if (err) {
+        console.error('Error opening database', err.message);
+    } else {
+        db.run('CREATE TABLE IF NOT EXISTS favorites (userId TEXT, bookId TEXT, UNIQUE(userId, bookId))');
+    }
+});
 
 const client = new OAuth2Client(googleClientId);
 
@@ -46,17 +56,23 @@ app.use(session({
 }));
 
 app.get('/search', async (req, res) => {
-    const keyword = req.query.q;
+    let keyword = req.query.q; // let으로 변경하여 수정 가능하게 함
     const page = parseInt(req.query.page) || 1;
     const maxResults = 12;
     const orderBy = req.query.orderBy || 'relevance'; // 'relevance' or 'newest'
+    const category = req.query.category; // 카테고리 파라미터 추가
     const startIndex = (page - 1) * maxResults;
 
     if (!keyword) {
         return res.status(400).json({ message: '검색어를 입력하세요.' });
     }
 
-    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${keyword}&maxResults=${maxResults}&startIndex=${startIndex}&orderBy=${orderBy}&country=JP&key=${apiKey}`;
+    // 카테고리가 지정된 경우, 검색어에 추가합니다.
+    if (category) {
+        keyword = `${keyword}+subject:${category}`;
+    }
+
+    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&maxResults=${maxResults}&startIndex=${startIndex}&orderBy=${orderBy}&country=JP&key=${apiKey}`;
 
     try {
         const apiResponse = await fetch(apiUrl);
@@ -69,36 +85,20 @@ app.get('/search', async (req, res) => {
 });
 
 // --- Favorites (My List) API ---
-// 메모리 내 저장을 위한 간단한 객체. 프로덕션 환경에서는 데이터베이스(예: SQLite, MongoDB) 사용을 권장합니다.
-const userFavoritesStore = {}; 
-
-// Helper function to read favorites
-async function readFavorites() {
-    // return userFavoritesStore;
-    // 파일 기반 저장 방식을 유지하고 싶다면 이 부분을 주석 해제하고 아래 writeFavorites와 함께 사용하세요.
-     try {
-         const data = await fs.readFile('./favorites.json', 'utf8');
-         return JSON.parse(data);
-     } catch (error) {
-         if (error.code === 'ENOENT') return {}; // 파일이 없으면 빈 객체 반환
-         throw error;
-     }
-}
-
-// Helper function to write favorites
-async function writeFavorites(data) {
-    // userFavoritesStore = data;
-    await fs.writeFile('./favorites.json', JSON.stringify(data, null, 2));
-}
 
 // Get user's favorites
 app.get('/api/mylist', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ message: '로그인이 필요합니다.' });
     }
-    const allFavorites = await readFavorites();
-    const userFavorites = allFavorites[req.session.user.id] || [];
-    res.json(userFavorites);
+    const userId = req.session.user.id;
+    db.all('SELECT bookId FROM favorites WHERE userId = ?', [userId], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ message: '데이터베이스 조회 오류' });
+        }
+        const bookIds = rows.map(row => row.bookId);
+        res.json(bookIds);
+    });
 });
 
 // Add a book to favorites
@@ -107,15 +107,18 @@ app.post('/api/mylist', async (req, res) => {
         return res.status(401).json({ message: '로그인이 필요합니다.' });
     }
     const { bookId } = req.body;
-    const allFavorites = await readFavorites();
     const userId = req.session.user.id;
     
-    if (!allFavorites[userId]) allFavorites[userId] = [];
-    if (!allFavorites[userId].includes(bookId)) {
-        allFavorites[userId].push(bookId);
-        await writeFavorites(allFavorites);
-    }
-    res.status(200).json(allFavorites[userId]);
+    db.run('INSERT INTO favorites (userId, bookId) VALUES (?, ?)', [userId, bookId], function(err) {
+        if (err) {
+            // 이미 존재하는 경우에도 에러가 발생하지 않도록 처리 (UNIQUE 제약 조건)
+            if (err.message.includes('UNIQUE constraint failed')) {
+                return res.status(200).send('Already exists');
+            }
+            return res.status(500).json({ message: '데이터베이스 추가 오류' });
+        }
+        res.status(201).send('Added to favorites');
+    });
 });
 
 // Remove a book from favorites
@@ -124,14 +127,14 @@ app.delete('/api/mylist/:bookId', async (req, res) => {
         return res.status(401).json({ message: '로그인이 필요합니다.' });
     }
     const { bookId } = req.params;
-    const allFavorites = await readFavorites();
     const userId = req.session.user.id;
 
-    if (allFavorites[userId]) {
-        allFavorites[userId] = allFavorites[userId].filter(id => id !== bookId);
-        await writeFavorites(allFavorites);
-    }
-    res.status(200).json(allFavorites[userId] || []);
+    db.run('DELETE FROM favorites WHERE userId = ? AND bookId = ?', [userId, bookId], function(err) {
+        if (err) {
+            return res.status(500).json({ message: '데이터베이스 삭제 오류' });
+        }
+        res.status(200).send('Removed from favorites');
+    });
 });
 
 // --- API for book details ---

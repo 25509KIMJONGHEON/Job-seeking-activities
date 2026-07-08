@@ -139,6 +139,17 @@
     </header>
 
     <div class="controls-container">
+        <div class="category-filter">
+            <label for="category-select">카테고리:</label>
+            <select id="category-select">
+                <option value="">모두</option>
+                <option value="Computers">컴퓨터</option>
+                <option value="Fiction">소설</option>
+                <option value="History">역사</option>
+                <option value="Science">과학</option>
+                <option value="Business & Economics">경제/경영</option>
+            </select>
+        </div>
         <div class="sort-options">
             <button data-sort="relevance" class="sort-btn active">関連度順</button>
             <button data-sort="newest" class="sort-btn">新着順</button>
@@ -181,6 +192,7 @@
         let currentPage = 1;
         let currentKeyword = '';
         let currentSortOrder = 'relevance';
+        let currentCategory = '';
         let userFavorites = [];
         let totalItems = 0;
 
@@ -326,6 +338,16 @@
             });
         });
 
+        // 카테고리 필터 로직
+        document.getElementById('category-select').addEventListener('change', (e) => {
+            currentCategory = e.target.value;
+            currentPage = 1; // 필터 변경 시 1페이지로 리셋
+            if (currentKeyword) {
+                fetchAndDisplayBooks();
+            }
+        });
+
+
         // 레이아웃 전환 로직
         const gridViewBtn = document.getElementById('grid-view-btn');
         const listViewBtn = document.getElementById('list-view-btn');
@@ -355,6 +377,7 @@
         async function searchBooks() {
             currentKeyword = document.getElementById('keyword').value;
             currentPage = 1; // 새로운 검색은 항상 1페이지에서 시작
+            document.getElementById('category-select').value = ''; // 검색 시 카테고리 필터 초기화
             fetchAndDisplayBooks();
         }
 
@@ -385,7 +408,7 @@
 
             try {
                 // 서버의 /search 엔드포인트로 요청을 보냅니다.
-                const response = await fetch(`/search?q=${currentKeyword}&page=${currentPage}&orderBy=${currentSortOrder}`);
+                const response = await fetch(`/search?q=${currentKeyword}&page=${currentPage}&orderBy=${currentSortOrder}&category=${currentCategory}`);
                 const data = await response.json();
                 resultsDiv.innerHTML = ''; // 이전 결과 지우기
 

@@ -69,22 +69,26 @@ app.get('/search', async (req, res) => {
 });
 
 // --- Favorites (My List) API ---
-const FAVORITES_FILE = './favorites.json';
+// 메모리 내 저장을 위한 간단한 객체. 프로덕션 환경에서는 데이터베이스(예: SQLite, MongoDB) 사용을 권장합니다.
+const userFavoritesStore = {}; 
 
 // Helper function to read favorites
 async function readFavorites() {
-    try {
-        const data = await fs.readFile(FAVORITES_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        if (error.code === 'ENOENT') return {}; // 파일이 없으면 빈 객체 반환
-        throw error;
-    }
+    // return userFavoritesStore;
+    // 파일 기반 저장 방식을 유지하고 싶다면 이 부분을 주석 해제하고 아래 writeFavorites와 함께 사용하세요.
+     try {
+         const data = await fs.readFile('./favorites.json', 'utf8');
+         return JSON.parse(data);
+     } catch (error) {
+         if (error.code === 'ENOENT') return {}; // 파일이 없으면 빈 객체 반환
+         throw error;
+     }
 }
 
 // Helper function to write favorites
 async function writeFavorites(data) {
-    await fs.writeFile(FAVORITES_FILE, JSON.stringify(data, null, 2));
+    // userFavoritesStore = data;
+    await fs.writeFile('./favorites.json', JSON.stringify(data, null, 2));
 }
 
 // Get user's favorites

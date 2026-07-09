@@ -6,115 +6,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <style>
-        /* Modal Styles */
-        .modal {
-            display: none; /* Hidden by default */
-            /* Animation */
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal.show {
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-            display: flex; /* Use flexbox for centering */
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: var(--modal-content-bg);
-            padding: 30px;
-            border: none;
-            width: 80%;
-            max-width: 700px;
-            border-radius: 8px;
-            position: relative;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-            animation: slideIn 0.4s ease-out;
-            color: var(--modal-text);
-        }
-
-        .close-button {
-            color: var(--modal-close-btn);
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: var(--modal-close-btn-hover);
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        #modal-book-details {
-            display: flex;
-            gap: 25px;
-        }
-
-        #modal-book-details img {
-            width: 150px;
-            height: auto;
-            object-fit: contain;
-            border-radius: 4px;
-            align-self: flex-start;
-        }
-
-        #modal-book-details .text-content {
-            flex: 1;
-        }
-
-        #modal-book-details h2 { margin-top: 0; color: var(--card-title-color); }
-        #modal-book-details p { line-height: 1.6; }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .skeleton-card { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: var(--card-shadow); }
-        .skeleton-card .skeleton { background: #e0e0e0; border-radius: 4px; }
-        .skeleton-card .skeleton.image { width: 100%; height: 250px; margin-bottom: 10px; }
-        .skeleton-card .skeleton.title { height: 20px; width: 80%; margin-bottom: 10px; }
-        .skeleton-card .skeleton.text { height: 15px; width: 60%; }
-
-        .like-btn {
-            position: absolute; top: 10px; right: 10px; background: none; border: none;
-            font-size: 24px; cursor: pointer; color: #ccc;
-        }
-        .like-btn.liked { color: #e74c3c; }
-        .book-card { position: relative; }
-
-        .remove-btn {
-            position: absolute; top: 10px; left: 10px; background: none; border: none;
-            font-size: 20px; cursor: pointer; color: #95a5a6;
-        }
-        .remove-btn:hover { color: #34495e; }
-
-        .pagination-container {
-            margin-top: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-    </style>
 </head>
 <body>
     <header class="hero-section">
@@ -140,14 +31,14 @@
 
     <div class="controls-container">
         <div class="category-filter">
-            <label for="category-select">카테고리:</label>
+            <label for="category-select">カテゴリ:</label>
             <select id="category-select">
-                <option value="">모두</option>
-                <option value="Computers">컴퓨터</option>
-                <option value="Fiction">소설</option>
-                <option value="History">역사</option>
-                <option value="Science">과학</option>
-                <option value="Business & Economics">경제/경영</option>
+                <option value="">すべて</option>
+                <option value="Computers">コンピュータ</option>
+                <option value="Fiction">フィクション</option>
+                <option value="History">歴史</option>
+                <option value="Science">科学</option>
+                <option value="Business & Economics">ビジネス・経済</option>
             </select>
         </div>
         <div class="sort-options">
@@ -157,6 +48,21 @@
         <div class="view-switcher">
             <button id="grid-view-btn" class="active">▦ グリッド</button>
             <button id="list-view-btn">☰ リスト</button>
+        </div>
+    </div>
+
+    <!-- My Page Modal -->
+    <div id="my-page-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button my-page-close">&times;</span>
+            <h2>マイページ</h2>
+            <div class="mypage-content">
+                <h3>記録</h3>
+                <h4>検索履歴</h4>
+                <ul id="search-history-list"></ul>
+                <h4>閲覧履歴</h4>
+                <div id="view-history-list" class="results-container"></div>
+            </div>
         </div>
     </div>
 

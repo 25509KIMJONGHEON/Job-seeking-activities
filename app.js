@@ -7,10 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modals
         bookModal: document.getElementById('book-modal'),
         myListModal: document.getElementById('my-list-modal'),
+        myPageModal: document.getElementById('my-page-modal'),
         modalCloseButtons: document.querySelectorAll('.close-button'),
         myListCloseButton: document.querySelector('.my-list-close'),
+        myPageCloseButton: document.querySelector('.my-page-close'),
         modalBookDetails: document.getElementById('modal-book-details'),
         myListContent: document.getElementById('my-list-content'),
+        searchHistoryList: document.getElementById('search-history-list'),
+        viewHistoryList: document.getElementById('view-history-list'),
         // Theme
         themeToggle: document.getElementById('checkbox'),
         // User Profile
@@ -61,9 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modals
         dom.modalCloseButtons.forEach(btn => btn.addEventListener('click', () => dom.bookModal.classList.remove('show')));
         dom.myListCloseButton.addEventListener('click', () => dom.myListModal.classList.remove('show'));
+        dom.myPageCloseButton.addEventListener('click', () => dom.myPageModal.classList.remove('show'));
         window.addEventListener('click', (event) => {
             if (event.target === dom.bookModal) dom.bookModal.classList.remove('show');
             if (event.target === dom.myListModal) dom.myListModal.classList.remove('show');
+            if (event.target === dom.myPageModal) dom.myPageModal.classList.remove('show');
         });
 
         // Theme
@@ -191,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.currentPage = 1;
         dom.categorySelect.value = '';
         state.currentCategory = '';
+        addSearchHistory(state.currentKeyword);
         await fetchAndDisplayBooks();
     }
 
@@ -295,21 +302,97 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- History Functions ---
+    function addSearchHistory(keyword) {
+        if (!keyword) return;
+        let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        // 중복 제거
+        history = history.filter(item => item !== keyword);
+        // 맨 앞에 추가
+        history.unshift(keyword);
+        // 최대 10개까지 저장
+        localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10)));
+    }
+
+    function addViewHistory(bookItem) {
+        if (!bookItem) return;
+        let history = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+        // 중복 제거 (같은 id의 책)
+        history = history.filter(item => item.id !== bookItem.id);
+        // 맨 앞에 추가
+        history.unshift(bookItem);
+        // 최대 20개까지 저장
+        localStorage.setItem('viewHistory', JSON.stringify(history.slice(0, 20)));
+    }
+
+    function showMyPage() {
+        renderSearchHistory();
+        renderViewHistory();
+        dom.myPageModal.classList.add('show');
+    }
+
+    function renderSearchHistory() {
+        const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        dom.searchHistoryList.innerHTML = '';
+        if (history.length === 0) {
+            dom.searchHistoryList.innerHTML = '<li>検索履歴がありません。</li>';
+            return;
+        }
+        history.forEach(keyword => {
+            const li = document.createElement('li');
+            li.textContent = keyword;
+            li.onclick = () => {
+                dom.keywordInput.value = keyword;
+                dom.myPageModal.classList.remove('show');
+                searchBooks();
+            };
+            dom.searchHistoryList.appendChild(li);
+        });
+    }
+
+    function renderViewHistory() {
+        const history = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+        dom.viewHistoryList.innerHTML = '';
+        if (history.length === 0) {
+            dom.viewHistoryList.innerHTML = '<p>閲覧履歴がありません。</p>';
+            return;
+        }
+        const fragment = document.createDocumentFragment();
+        history.forEach(item => {
+            // createBookCard 함수는 '좋아요' 등 다른 상태에 의존하므로,
+            // 히스토리용 카드 렌더링 함수를 간소화하여 만듭니다.
+            const card = createBookCard(item);
+            // 히스토리 카드에는 좋아요 버튼이 필요 없으므로 제거합니다.
+            const likeBtn = card.querySelector('.like-btn');
+            if (likeBtn) likeBtn.remove();
+            fragment.appendChild(card);
+        });
+        dom.viewHistoryList.appendChild(fragment);
+    }
+
+
     // --- Rendering ---
     function renderLoginButton() {
+        dom.userProfile.classList.remove('logged-in');
         dom.userProfile.innerHTML = '';
         google.accounts.id.renderButton(dom.userProfile, {
-            theme: "outline", size: "large", text: "signin_with", shape: "rectangular"
+            theme: "outline",
+            size: "medium",
+            text: "signin_with",
+            shape: "rectangular"
         });
     }
 
     function renderUserProfile(user) {
+        dom.userProfile.classList.add('logged-in');
         dom.userProfile.innerHTML = `
             <img src="${user.picture}" alt="Profile picture" class="profile-pic">
             <span class="profile-name">${user.name}</span>
+            <button id="my-page-btn" class="my-list-button">マイページ</button>
             <button id="my-list-btn" class="my-list-button">マイリスト</button>
             <a href="/api/logout" class="logout-btn">ログアウト</a>
         `;
+        document.getElementById('my-page-btn').addEventListener('click', showMyPage);
         document.getElementById('my-list-btn').addEventListener('click', showMyList);
     }
 
@@ -421,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         textContentDiv.querySelector('.publisher').innerHTML = `<strong>出版社:</strong> ${publisher || '出版社不明'} (${publishedDate || '出版日不明'})`;
         textContentDiv.querySelector('.description').textContent = description || '説明がありません。';
 
+        addViewHistory(bookItem); // 조회 기록에 추가
         dom.bookModal.classList.add('show');
     }
 

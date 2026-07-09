@@ -1,175 +1,457 @@
-/* style.css */
+/* 1. Design System (Variables) */
 :root {
-    --bg-color: #f4f7f6;
+    /* Light Theme */
+    --bg-color: #f4f7f9;
     --text-color: #333;
-    --hero-gradient-start: #2c3e50;
-    --hero-gradient-end: #34495e;
-    --hero-text-color: white;
-    --input-bg: white;
-    --input-text: #333;
-    --button-bg: #e67e22;
-    --button-hover-bg: #34495e;
-    --card-bg: white;
-    --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    --hero-bg: linear-gradient(135deg, #6dd5ed, #2193b0);
+    --hero-text: #ffffff;
+    --card-bg: #ffffff;
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
     --card-title-color: #2c3e50;
     --card-text-color: #7f8c8d;
-    --modal-bg: #fefefe;
+    --button-bg: #3498db;
+    --button-text: #ffffff;
+    --button-hover-bg: #2980b9;
+    --input-bg: #ffffff;
+    --input-border: #bdc3c7;
+    --input-focus-border: #3498db;
+    --control-bg: #ffffff;
+    --control-text: #34495e;
+    --control-active-bg: #3498db;
+    --control-active-text: #ffffff;
+    --modal-content-bg: #ffffff;
     --modal-text: #333;
-    --modal-content-bg: #fefefe;
     --modal-close-btn: #aaa;
-    --modal-close-btn-hover: black;
-    --footer-bg: #e9ecef;
-    --footer-text: #6c757d;
+    --modal-close-btn-hover: #333;
+    --skeleton-bg: #e0e0e0;
+    --footer-bg: #2c3e50;
+    --footer-text: #ecf0f1;
+}
+
+.dark-mode {
+    /* Dark Theme */
+    --bg-color: #1a1a2e;
+    --text-color: #e0e0e0;
+    --hero-bg: linear-gradient(135deg, #2c3e50, #16222a);
+    --hero-text: #ffffff;
+    --card-bg: #1e1e3f;
+    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --card-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    --card-title-color: #ffffff;
+    --card-text-color: #9a9a9a;
+    --button-bg: #4e73df;
+    --button-hover-bg: #3a56c4;
+    --input-bg: #2c2c54;
+    --input-border: #4a4a70;
+    --input-focus-border: #4e73df;
+    --control-bg: #2c2c54;
+    --control-text: #f0f0f0;
+    --control-active-bg: #4e73df;
+    --modal-content-bg: #1e1e3f;
+    --modal-text: #e0e0e0;
+    --modal-close-btn: #777;
+    --modal-close-btn-hover: #fff;
+    --skeleton-bg: #2c2c54;
+    --footer-bg: #16222a;
+    --footer-text: #bdc3c7;
+}
+
+/* 2. General Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
-    margin: 0;
-    padding: 0;
     color: var(--text-color);
+    line-height: 1.6;
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* 3. Header & Hero Section */
 .hero-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    background: var(--hero-bg);
+    color: var(--hero-text);
     padding: 60px 20px;
-    background: linear-gradient(135deg, var(--hero-gradient-start), var(--hero-gradient-end));
-    color: var(--hero-text-color);
-    min-height: 30vh;
+    text-align: center;
+    position: relative;
 }
 
-.hero-section h1 {
-    font-size: 2.5em;
+.hero-content h1 {
+    font-size: 2.8rem;
     margin-bottom: 10px;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    font-weight: 700;
 }
 
-.hero-section .subtitle {
-    font-size: 1.1em;
+.hero-content .subtitle {
+    font-size: 1.2rem;
     margin-bottom: 30px;
     opacity: 0.9;
 }
 
 .search-box {
     display: flex;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    border-radius: 12px;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 50px;
 }
 
-input { padding: 15px; width: 350px; border: none; border-radius: 12px 0 0 12px; outline: none; font-size: 1em; background-color: var(--input-bg); color: var(--input-text); }
-button { padding: 15px 25px; background-color: var(--button-bg); color: white; border: none; border-radius: 0 12px 12px 0; cursor: pointer; font-size: 1em; font-weight: bold; }
-button:hover { background-color: var(--button-hover-bg); }
-
-.results-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; padding: 40px; box-sizing: border-box; margin: 0 auto; }
-.book-card { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: var(--card-shadow); transition: transform 0.2s, box-shadow 0.2s; text-align: center; }
-.book-card:hover { transform: translateY(-5px); }
-.book-card img { width: 100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
-.book-card h3 { font-size: 1em; margin: 10px 0; color: var(--card-title-color); }
-.book-card p { color: var(--card-text-color); font-size: 0.85em; }
-
-/* Dark Mode Styles */
-body.dark-mode {
-    --bg-color: #1a1a1a;
-    --text-color: #e0e0e0;
-    --hero-gradient-start: #1f2937;
-    --hero-gradient-end: #111827;
-    --input-bg: #374151;
-    --input-text: #f9fafb;
-    --button-bg: #f97316;
-    --button-hover-bg: #1f2937;
-    --card-bg: #2d3748;
-    --card-shadow: 0 4px 6px rgba(0,0,0,0.4);
-    --card-title-color: #e2e8f0;
-    --card-text-color: #a0aec0;
-    --modal-content-bg: #2d3748;
-    --modal-text: #e0e0e0;
-    --modal-close-btn: #a0aec0;
-    --modal-close-btn-hover: white;
-    --skeleton-bg: #4a5568;
-    --skeleton-highlight: #718096;
-    --footer-bg: #1f2937;
-    --footer-text: #a0aec0;
+.search-box input {
+    width: 100%;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 50px 0 0 50px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: background-color 0.3s;
 }
 
-/* Theme Toggle Switch */
-.theme-switch-wrapper {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+.search-box input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--input-focus-border);
+}
+
+.search-box button {
+    padding: 15px 30px;
+    border: none;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0 50px 50px 0;
+    transition: background-color 0.3s;
+}
+
+.search-box button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* 4. Controls Container */
+.controls-container {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: var(--control-bg);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
 }
-.theme-switch {
-    display: inline-block;
-    height: 24px;
-    position: relative;
-    width: 50px;
-}
-.theme-switch input { display: none; }
-.slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; }
-.slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; }
-input:checked + .slider { background-color: #e67e22; }
-input:checked + .slider:before { transform: translateX(26px); }
-.theme-switch-wrapper span { margin-left: 8px; color: white; font-weight: bold; }
 
-/* User Profile */
-.user-profile {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+.category-filter, .sort-options, .view-switcher {
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 5px 10px;
+    margin: 10px;
+}
+
+.category-filter label {
+    font-weight: 600;
+    color: var(--control-text);
+}
+
+.category-filter select, .sort-options button, .view-switcher button {
+    padding: 8px 15px;
+    border: 1px solid var(--input-border);
     border-radius: 20px;
-}
-.profile-pic {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-}
-.profile-name { color: white; font-weight: bold; }
-.logout-btn { color: white; text-decoration: none; font-size: 0.9em; }
-.logout-btn:hover { text-decoration: underline; }
-.my-list-button {
-    background-color: rgba(255,255,255,0.2); color: white; border: 1px solid white;
-    padding: 5px 10px; border-radius: 15px; cursor: pointer;
+    background-color: transparent;
+    color: var(--control-text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
+.sort-options button.active, .view-switcher button.active {
+    background-color: var(--control-active-bg);
+    color: var(--control-active-text);
+    border-color: var(--control-active-bg);
+    font-weight: 600;
+}
 
-/* Controls Container */
-.controls-container {
+.sort-options button:hover, .view-switcher button:hover, .category-filter select:hover {
+    background-color: var(--input-border);
+}
+
+.sort-options button.active:hover, .view-switcher button.active:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* 5. Results Container & Book Cards */
+.results-container {
+    display: grid;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 25px;
+}
+
+.results-container.grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.results-container.list-view {
+    grid-template-columns: 1fr;
+}
+
+.book-card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    cursor: pointer;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.results-container.list-view .book-card {
+    flex-direction: row;
+}
+
+.book-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.results-container.list-view .book-card img {
+    width: 120px;
+    height: 180px;
+    object-fit: cover;
+}
+
+.book-card .card-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card h3 {
+    font-size: 1.1rem;
+    color: var(--card-title-color);
+    margin-bottom: 10px;
+}
+
+.book-card p {
+    font-size: 0.9rem;
+    color: var(--card-text-color);
+    flex-grow: 1;
+}
+
+.book-card .description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.results-container.list-view .book-card .description {
+    -webkit-line-clamp: 4;
+}
+
+/* 6. Modal */
+.modal {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal.show {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
     align-items: center;
-    max-width: 1100px;
-    margin: 20px auto -20px auto;
-    padding: 0 40px;
+    justify-content: center;
 }
 
-.sort-options button, .view-switcher button { background: none; border: 1px solid #ccc; padding: 8px 15px; cursor: pointer; border-radius: 6px; margin: 0 5px; color: var(--text-color); }
-.sort-options button.active, .view-switcher button.active { background-color: var(--button-bg); color: white; border-color: var(--button-bg); }
-
-/* Skeleton Animation */
-.skeleton {
-    opacity: 0.7;
-    animation: skeleton-loading 1.5s infinite linear;
-    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-highlight) 50%, var(--skeleton-bg) 75%);
-    background-size: 200% 100%;
+.modal-content {
+    background-color: var(--modal-content-bg);
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.4s ease-out;
+    color: var(--modal-text);
 }
 
-@keyframes skeleton-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+.close-button {
+    color: var(--modal-close-btn);
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    transition: color 0.3s;
 }
 
-/* Scroll to Top Button */
+.close-button:hover,
+.close-button:focus {
+    color: var(--modal-close-btn-hover);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#modal-book-details {
+    display: flex;
+    gap: 25px;
+}
+
+#modal-book-details img {
+    width: 150px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    align-self: flex-start;
+}
+
+#modal-book-details .text-content {
+    flex: 1;
+}
+
+#modal-book-details h2 {
+    margin-top: 0;
+    color: var(--card-title-color);
+}
+
+#modal-book-details p {
+    line-height: 1.7;
+}
+
+#my-list-modal .results-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+/* My Page Modal specific styles for book cards */
+#my-page-modal .results-container {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    max-height: 40vh; /* Add scroll for many items */
+    overflow-y: auto;
+    padding-top: 10px;
+}
+
+#my-page-modal .book-card img {
+    height: 180px;
+}
+
+#my-page-modal .book-card .card-content {
+    padding: 10px;
+}
+
+#my-page-modal .book-card h3 {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+}
+
+
+/* My Page Modal specific styles */
+.mypage-content h3 {
+    border-bottom: 2px solid var(--input-border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.mypage-content h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--card-title-color);
+}
+
+#search-history-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#search-history-list li {
+    background: var(--control-bg);
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#search-history-list li:hover {
+    background-color: var(--control-active-bg);
+    color: var(--control-active-text);
+}
+
+/* 7. Buttons & Interactive Elements */
+.like-btn, .remove-btn {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.like-btn {
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    color: #bdc3c7;
+}
+
+.like-btn.liked {
+    color: #e74c3c;
+}
+
+.like-btn:hover {
+    transform: scale(1.1);
+}
+
+.remove-btn {
+    top: 15px;
+    left: 15px;
+    font-size: 18px;
+    color: #95a5a6;
+}
+
+.remove-btn:hover {
+    color: #34495e;
+    transform: scale(1.1);
+}
+
 #scrollTopBtn {
     display: none;
     position: fixed;
@@ -181,37 +463,241 @@ input:checked + .slider:before { transform: translateX(26px); }
     background-color: var(--button-bg);
     color: white;
     cursor: pointer;
-    padding: 12px 16px;
+    padding: 15px;
     border-radius: 50%;
+    width: 50px;
+    height: 50px;
     font-size: 18px;
-    box-shadow: var(--card-shadow);
-    transition: background-color 0.3s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 #scrollTopBtn:hover {
     background-color: var(--button-hover-bg);
+    transform: translateY(-3px);
 }
 
-/* Footer */
+/* 8. Pagination */
+.pagination-container {
+    margin: 40px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagination-container button {
+    background-color: var(--control-bg);
+    color: var(--control-text);
+    border: 1px solid var(--input-border);
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination-container button:hover {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border-color: var(--button-bg);
+}
+
+.pagination-container span {
+    font-weight: 600;
+    color: var(--card-text-color);
+}
+
+/* 9. Footer */
 .site-footer {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
     background-color: var(--footer-bg);
     color: var(--footer-text);
-    font-size: 0.9em;
-    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 40px;
 }
 
 .site-footer p {
     margin: 5px 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
-/* Hide remove button by default and show on hover */
-#my-list-content .remove-btn {
-    opacity: 0;
-    transition: opacity 0.2s;
+/* 10. User Profile & Theme Switch */
+.user-profile {
+    position: absolute;
+    top: 22px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
-#my-list-content .book-card:hover .remove-btn {
-    opacity: 1;
+
+.profile-pic {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.profile-name {
+    font-weight: 600;
+}
+
+.my-list-button, .logout-btn {
+    color: white;
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.my-list-button:hover, .logout-btn:hover {
+    background-color: white;
+    color: var(--button-bg);
+}
+
+.theme-switch-wrapper {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 50px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 16px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 16px;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4e73df;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* 11. Animations & Skeleton Loader */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.skeleton-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.skeleton-card .skeleton {
+    background: var(--skeleton-bg);
+    border-radius: 4px;
+    opacity: 0.5;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-card .skeleton.image {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 15px;
+}
+
+.skeleton-card .skeleton.title {
+    height: 20px;
+    width: 80%;
+    margin-bottom: 10px;
+}
+
+.skeleton-card .skeleton.text {
+    height: 15px;
+    width: 60%;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+/* 12. Responsive Design */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    .controls-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #modal-book-details {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .user-profile {
+        top: 15px;
+        left: 20px;
+        padding: 5px;
+        gap: 8px;
+    }
+    .profile-name, .my-list-button, .logout-btn {
+        display: none; /* Hide text on small screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .search-box {
+        flex-direction: column;
+        border-radius: 25px;
+    }
+    .search-box input {
+        border-radius: 25px 25px 0 0;
+        text-align: center;
+    }
+    .search-box button {
+        border-radius: 0 0 25px 25px;
+    }
+    .results-container.grid-view {
+        grid-template-columns: 1fr;
+    }
 }

@@ -32,6 +32,27 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
+// --- Simple In-Memory Cache ---
+const apiCache = new Map();
+const CACHE_TTL = 10 * 60 * 1000; // 10분
+
+function getCache(key) {
+    const record = apiCache.get(key);
+    if (!record) return null;
+
+    // TTL(Time To Live) 확인
+    if (Date.now() > record.expiry) {
+        apiCache.delete(key);
+        return null;
+    }
+
+    return record.data;
+}
+
+function setCache(key, data) {
+    apiCache.set(key, { data, expiry: Date.now() + CACHE_TTL });
+}
+
 const client = new OAuth2Client(googleClientId);
 
 const app = express();
@@ -75,9 +96,36 @@ app.get('/search', async (req, res) => {
     const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(keyword)}&maxResults=${maxResults}&startIndex=${startIndex}&orderBy=${orderBy}&country=JP&key=${apiKey}`;
 
     try {
+        // 1. 캐시 확인
+        const cachedData = getCache(apiUrl);
+        if (cachedData) {
+            return res.json(cachedData);
+        }
+
+        // 2. 캐시가 없으면 API 호출
         const apiResponse = await fetch(apiUrl);
         const data = await apiResponse.json();
-        res.json(data);
+
+        // 클라이언트에 필요한 데이터만 추출하여 전송
+        const optimizedData = {
+            totalItems: data.totalItems,
+            items: data.items ? data.items.map(item => ({
+                id: item.id,
+                volumeInfo: {
+                    title: item.volumeInfo.title,
+                    authors: item.volumeInfo.authors,
+                    description: item.volumeInfo.description,
+                    imageLinks: item.volumeInfo.imageLinks,
+                    publisher: item.volumeInfo.publisher,
+                    publishedDate: item.volumeInfo.publishedDate,
+                }
+            })) : []
+        };
+
+        // 3. 결과를 캐시에 저장
+        setCache(apiUrl, optimizedData);
+
+        res.json(optimizedData);
     } catch (error) {
         console.error('API 요청 오류:', error);
         res.status(500).json({ message: '서버에서 오류가 발생했습니다.' });
@@ -142,8 +190,18 @@ app.get('/api/book/:bookId', async (req, res) => {
     const { bookId } = req.params;
     const apiUrl = `https://www.googleapis.com/books/v1/volumes/${bookId}?key=${apiKey}`;
     try {
+        // 1. 캐시 확인
+        const cachedData = getCache(apiUrl);
+        if (cachedData) {
+            return res.json(cachedData);
+        }
+
+        // 2. 캐시가 없으면 API 호출
         const apiResponse = await fetch(apiUrl);
         const data = await apiResponse.json();
+
+        // 3. 결과를 캐시에 저장
+        setCache(apiUrl, data);
         res.json(data);
     } catch (error) {
         console.error('Book details API request error:', error);

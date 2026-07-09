@@ -56,23 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function initializeGoogleSignIn() {
-        try {
-            const configRes = await fetch('/api/config');
-            const config = await configRes.json();
-
-            google.accounts.id.initialize({
-                client_id: config.clientId,
-                callback: handleCredentialResponse
-            });
-            await checkLoginStatus();
-        } catch (error) {
-            console.error("Error initializing Google Sign-In:", error);
-            // Display login button even if config fails, so user can try.
-            renderLoginButton();
-        }
-    }
-
     // --- Event Listeners ---
     function initializeEventListeners() {
         // Modals
@@ -109,6 +92,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const theme = dom.body.classList.contains('dark-mode') ? 'dark' : 'light';
         localStorage.setItem('theme', theme);
     }
+
+    // Google 로그인 초기화는 window.onload에서 수행하여 GSI 라이브러리가 로드된 후 실행되도록 합니다.
+    window.onload = async () => {
+        try {
+            const configRes = await fetch('/api/config');
+            const config = await configRes.json();
+
+            google.accounts.id.initialize({
+                client_id: config.clientId,
+                callback: handleCredentialResponse
+            });
+            await checkLoginStatus();
+        } catch (error) {
+            console.error("Error initializing Google Sign-In:", error);
+            // 설정 로드에 실패하더라도 사용자가 로그인을 시도할 수 있도록 버튼을 표시합니다.
+            // google 객체가 없을 수 있으므로 확인 후 호출합니다.
+            if (window.google && google.accounts && google.accounts.id) renderLoginButton();
+        }
+    };
 
     async function handleCredentialResponse(response) {
         try {
@@ -212,7 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.resultsContainer.innerHTML = '';
             if (data.items?.length > 0) {
                 state.totalItems = data.totalItems;
-                data.items.forEach(renderBookCard);
+                // DocumentFragment를 사용하여 DOM 조작 최소화
+                const fragment = document.createDocumentFragment();
+                data.items.forEach(item => fragment.appendChild(createBookCard(item)));
+                dom.resultsContainer.appendChild(fragment);
             } else {
                 state.totalItems = 0;
                 dom.resultsContainer.innerHTML = '<p>結果が見つかりませんでした。</p>';
@@ -322,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderBookCard(item) {
+    function createBookCard(item) {
         const { volumeInfo, id: bookId } = item;
         const { title, authors, description, imageLinks } = volumeInfo;
         const authorText = authors ? authors.join(', ') : '著者不明';
@@ -335,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', () => showBookDetails(item));
 
         card.innerHTML = `
-            ${thumbnail ? `<img src="${thumbnail}" alt="">` : ''}
+            ${thumbnail ? `<img src="${thumbnail}" alt="${title}" loading="lazy">` : ''}
             <button class="like-btn">&#x2764;</button>
             <div class="card-content">
                 <h3></h3>
@@ -357,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleLike(bookId, likeBtn);
         });
 
-        dom.resultsContainer.appendChild(card);
+        return card;
     }
 
     function renderMyListItem(item) {
@@ -371,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.innerHTML = `
             <button class="remove-btn" title="リストから削除">🗑️</button>
-            <img src="${thumbnail}" alt="">
+            <img src="${thumbnail}" alt="${title}" loading="lazy">
             <div class="card-content">
                 <h3></h3>
                 <p></p>
@@ -400,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { title, authors, publisher, publishedDate, description, imageLinks } = volumeInfo;
 
         const detailsHTML = `
-            <img src="${imageLinks?.thumbnail || ''}" alt="">
+            <img src="${imageLinks?.thumbnail || ''}" alt="${title || '책 표지'}" loading="lazy">
             <div class="text-content">
                 <h2></h2>
                 <p class="author"></p>

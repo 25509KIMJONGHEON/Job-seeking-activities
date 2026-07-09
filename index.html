@@ -1,98 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>書籍検索システム</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-</head>
-<body>
+  </head>
+  <body>
     <header class="hero-section">
-        <div class="theme-switch-wrapper">
-            <label class="theme-switch" for="checkbox">
-                <input type="checkbox" id="checkbox" />
-                <div class="slider"></div>
-            </label>
-            <span>🌙</span>
+      <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+          <input type="checkbox" id="checkbox" />
+          <div class="slider"></div>
+        </label>
+        <span>🌙</span>
+      </div>
+      <div id="user-profile" class="user-profile">
+        <!-- 로그인 버튼 또는 사용자 정보가 여기에 표시됩니다 -->
+      </div>
+      <div class="hero-content">
+        <h1>📚 書籍検索システム</h1>
+        <p class="subtitle">
+          お探しの本を見つけて、新しい知識の世界へ旅立ちましょう。
+        </p>
+        <div class="search-box">
+          <input
+            type="text"
+            id="keyword"
+            placeholder="著者名やタイトルを入力..."
+          />
+          <button>検索</button>
         </div>
-        <div id="user-profile" class="user-profile">
-            <!-- 로그인 버튼 또는 사용자 정보가 여기에 표시됩니다 -->
-        </div>
-        <div class="hero-content">
-            <h1>📚 書籍検索システム</h1>
-            <p class="subtitle">お探しの本を見つけて、新しい知識の世界へ旅立ちましょう。</p>
-            <div class="search-box">
-                <input type="text" id="keyword" placeholder="著者名やタイトルを入力...">
-                <button onclick="searchBooks()">検索</button>
-            </div>
-        </div>
+      </div>
     </header>
 
     <div class="controls-container">
-        <div class="category-filter">
-            <label for="category-select">カテゴリ:</label>
-            <select id="category-select">
-                <option value="">すべて</option>
-                <option value="Computers">コンピュータ</option>
-                <option value="Fiction">フィクション</option>
-                <option value="History">歴史</option>
-                <option value="Science">科学</option>
-                <option value="Business & Economics">ビジネス・経済</option>
-            </select>
-        </div>
-        <div class="sort-options">
-            <button data-sort="relevance" class="sort-btn active">関連度順</button>
-            <button data-sort="newest" class="sort-btn">新着順</button>
-        </div>
-        <div class="view-switcher">
-            <button id="grid-view-btn" class="active">▦ グリッド</button>
-            <button id="list-view-btn">☰ リスト</button>
-        </div>
+      <div class="category-filter">
+        <label for="category-select">カテゴリ:</label>
+        <select id="category-select">
+          <option value="">すべて</option>
+          <option value="Computers">コンピュータ</option>
+          <option value="Fiction">フィクション</option>
+          <option value="History">歴史</option>
+          <option value="Science">科学</option>
+          <option value="Business & Economics">ビジネス・経済</option>
+        </select>
+      </div>
+      <div class="sort-options">
+        <button data-sort="relevance" class="sort-btn active">関連度順</button>
+        <button data-sort="newest" class="sort-btn">新着順</button>
+      </div>
+      <div class="view-switcher">
+        <button id="grid-view-btn" class="active">▦ グリッド</button>
+        <button id="list-view-btn">☰ リスト</button>
+      </div>
     </div>
 
     <!-- My Page Modal -->
     <div id="my-page-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button my-page-close">&times;</span>
-            <h2>マイページ</h2>
-            <div class="mypage-content">
-                <h3>記録</h3>
-                <h4>検索履歴</h4>
-                <ul id="search-history-list"></ul>
-                <h4>閲覧履歴</h4>
-                <div id="view-history-list" class="results-container"></div>
-            </div>
+      <div class="modal-content">
+        <span class="close-button my-page-close">&times;</span>
+        <h2>マイページ</h2>
+        <div class="mypage-content">
+          <h3>記録</h3>
+          <h4>検索履歴</h4>
+          <ul id="search-history-list"></ul>
+          <h4>閲覧履歴</h4>
+          <div id="view-history-list" class="results-container"></div>
         </div>
+      </div>
     </div>
 
     <!-- My List Modal -->
     <div id="my-list-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button my-list-close">&times;</span>
-            <h2>マイリスト</h2>
-            <div id="my-list-content" class="results-container"></div>
-        </div>
+      <div class="modal-content">
+        <span class="close-button my-list-close">&times;</span>
+        <h2>マイリスト</h2>
+        <div id="my-list-content" class="results-container"></div>
+      </div>
     </div>
 
-    <main id="results" class="results-container"></main>
+    <main>
+      <div id="results" class="results-container"></div>
+    </main>
+
     <div id="pagination" class="pagination-container"></div>
 
     <button id="scrollTopBtn" title="トップへ戻る">▲</button>
 
     <!-- The Modal -->
     <div id="book-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div id="modal-book-details"></div>
-        </div>
+      <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <div id="modal-book-details"></div>
+      </div>
     </div>
 
     <footer class="site-footer">
-        <p>&copy; 2026 書籍検索システム. All Rights Reserved.</p>
-        <p>このサイトは学校の課題として作成されました。</p>
+      <p>&copy; 2026 書籍検索システム. All Rights Reserved.</p>
+      <p>このサイトは学校の課題として作成されました。</p>
     </footer>
 
     <script src="app.js" defer></script>
-</body>
+  </body>
 </html>

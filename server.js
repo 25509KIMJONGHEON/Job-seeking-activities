@@ -157,7 +157,6 @@ app.get("/search", async (req, res) => {
 });
 
 // --- Favorites (My List) API ---
-
 // Get user's favorites
 app.get("/api/mylist", async (req, res) => {
   if (!req.session.user) {
@@ -213,7 +212,6 @@ app.delete("/api/mylist/:bookId", async (req, res) => {
 });
 
 // --- History API ---
-
 // Get all history for a user
 app.get("/api/history", (req, res) => {
   if (!req.session.user) {

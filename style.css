@@ -374,7 +374,6 @@ body {
     -webkit-line-clamp: 2;
 }
 
-
 /* My Page Modal specific styles */
 .mypage-content h3 {
     border-bottom: 2px solid var(--input-border);

@@ -45,9 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     viewHistory: [],
   };
 
-  // --- Functions ---
-
-  // --- Initialization ---
+  // --- Initialization & Event Handlers ---
   function initializeApp() {
     initializeTheme();
     initializeEventListeners();
@@ -108,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // --- Event Handlers ---
   function handleThemeToggle() {
     dom.body.classList.toggle("dark-mode");
     const theme = dom.body.classList.contains("dark-mode") ? "dark" : "light";
